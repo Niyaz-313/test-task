@@ -1,0 +1,317 @@
+openapi: 3.0.3
+info:
+  title: Travel Application API
+  version: 1.0.0
+  description: API для бронирования путешествий
+servers:
+  - url: https://api.travelapp.com/v1
+tags:
+  - name: Пользователи
+    description: Управление данными пользователей
+  - name: Бронирования
+    description: Операции с бронированиями
+
+paths:
+  /users/{userId}:
+    put:
+      tags: [Пользователи]
+      summary: Обновление данных пользователя
+      description: Изменение информации в личном кабинете
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 123
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdateRequest'
+      responses:
+        '200':
+          description: Данные успешно обновлены
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/UserNotFound'
+
+  /bookings:
+    post:
+      tags: [Бронирования]
+      summary: Создание брони с авиабилетами
+      description: Создание новой брони с привязкой авиабилетов
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingCreateRequest'
+      responses:
+        '201':
+          description: Бронь успешно создана
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /bookings/{bookingId}:
+    get:
+      tags: [Бронирования]
+      summary: Получение данных о брони
+      description: Просмотр информации о бронировании с авиабилетами
+      parameters:
+        - name: bookingId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "BK-78901"
+      responses:
+        '200':
+          description: Данные бронирования
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/BookingNotFound'
+
+    put:
+      tags: [Бронирования]
+      summary: Изменение данных брони
+      description: Обновление информации о бронировании и билетах
+      parameters:
+        - name: bookingId
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "BK-78901"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingUpdateRequest'
+      responses:
+        '200':
+          description: Бронь успешно обновлена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/BookingNotFound'
+
+components:
+  schemas:
+    UserUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Каримов Нияз"
+        email:
+          type: string
+          format: email
+          example: "niyaz@example.com"
+        phone:
+          type: string
+          example: "+79001234567"
+      required:
+        - email
+        - phone
+
+    BookingCreateRequest:
+      type: object
+      properties:
+        userId:
+          type: integer
+          example: 123
+        tickets:
+          type: array
+          items:
+            $ref: '#/components/schemas/TicketRequest'
+      required:
+        - userId
+        - tickets
+
+    BookingUpdateRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [confirmed, pending, cancelled, changed]
+          example: "changed"
+        tickets:
+          type: array
+          items:
+            $ref: '#/components/schemas/TicketUpdate'
+      required:
+        - status
+
+    BookingResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "BK-78901"
+        userId:
+          type: integer
+          example: 123
+        status:
+          type: string
+          example: "confirmed"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-06-30T14:30:00Z"
+        tickets:
+          type: array
+          items:
+            $ref: '#/components/schemas/TicketResponse'
+
+    TicketRequest:
+      type: object
+      properties:
+        flightNumber:
+          type: string
+          example: "SU-123"
+        departure:
+          type: string
+          format: date-time
+          example: "2025-07-15T08:00:00Z"
+        arrival:
+          type: string
+          format: date-time
+          example: "2025-07-15T12:00:00Z"
+        passenger:
+          type: string
+          example: "Каримов Нияз"
+
+    TicketUpdate:
+      type: object
+      properties:
+        ticketId:
+          type: string
+          example: "TKT-456"
+        newFlightNumber:
+          type: string
+          example: "SU-789"
+
+    TicketResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "TKT-456"
+        flightNumber:
+          type: string
+          example: "SU-123"
+        departure:
+          type: string
+          format: date-time
+          example: "2025-07-15T08:00:00Z"
+        arrival:
+          type: string
+          format: date-time
+          example: "2025-07-15T12:00:00Z"
+        passenger:
+          type: string
+          example: "Каримов Нияз"
+        status:
+          type: string
+          example: "issued"
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Данные успешно обновлены"
+
+  responses:
+    BadRequest:
+      description: Некорректные параметры запроса
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Неверный формат телефона"
+    
+    Unauthorized:
+      description: Требуется авторизация
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Требуется авторизация"
+    
+    Forbidden:
+      description: Доступ запрещен
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Нет прав для выполнения операции"
+    
+    UserNotFound:
+      description: Пользователь не найден
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Пользователь с ID 123 не найден"
+    
+    BookingNotFound:
+      description: Бронь не найдена
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                example: "Бронь BK-78901 не найдена"
