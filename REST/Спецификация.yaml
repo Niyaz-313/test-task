@@ -286,4 +286,4 @@ components:
       required: true
       schema:
         type: string
-      description: Формат получаемого документа: xml или json
+      description: Формат получаемого документа. xml или json
