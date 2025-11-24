@@ -280,10 +280,10 @@ components:
         type: string
       description: Список GTIN кодов через точку с запятой
 
-    GTINsParam:
+    FormatParam:
       name: format
       in: query
       required: true
       schema:
         type: string
-      description: Формат получаемого документа. xml или json
+      description: Формат получаемого документа xml или json
