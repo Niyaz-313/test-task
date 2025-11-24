@@ -30,6 +30,12 @@ paths:
           schema:
             type: string
           description: Список GTIN кодов через точку с запятой
+        - name: format
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Формат получаемого документа xml или json
       
       responses:
         '200':
