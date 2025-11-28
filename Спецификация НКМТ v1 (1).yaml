@@ -1,0 +1,296 @@
+openapi: 3.0.0
+info:
+  title: API Национальный каталог
+  description: API для получения информации о продуктах из национального каталога
+  version: 3.0.0
+  contact:
+    name: Национальный каталог
+    url: https://национальный-каталог.рф
+
+servers:
+  - url: https://апи.национальный-каталог.рф
+    description: Основной сервер API
+
+paths:
+  /v3/vetis-product:
+    get:
+      summary: Получение информации о продуктах по GTIN
+      description: Возвращает детальную информацию о продуктах по их GTIN кодам
+      operationId: getProductsByGTIN
+      parameters:
+        - name: apikey
+          in: query
+          required: true
+          schema:
+            type: string
+          description: API ключ для аутентификации
+        - name: gtins
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Список GTIN кодов через точку с запятой
+        - name: format
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Формат получаемого документа xml или json
+      
+      responses:
+        '200':
+          description: Успешный ответ с информацией о продуктах
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductsResponse'
+        '400':
+          description: Неверный запрос
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Неавторизованный доступ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    ProductsResponse:
+      type: object
+      properties:
+        apiversion:
+          type: integer
+          description: Версия API
+        result:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+    
+    Product:
+      type: object
+      properties:
+        good_id:
+          type: integer
+          description: Уникальный идентификатор товара
+        identified_by:
+          type: array
+          items:
+            $ref: '#/components/schemas/Identification'
+        good_name:
+          type: string
+          description: Наименование товара
+        is_kit:
+          type: boolean
+          description: Является ли набором
+        is_set:
+          type: boolean
+          description: Является ли комплектом
+        set_gtins:
+          type: array
+          items:
+            type: string
+        good_url:
+          type: string
+          description: URL страницы товара
+        good_img:
+          type: string
+          description: URL основного изображения товара
+        good_status:
+          type: string
+          description: Статус товара
+          enum: [published, draft, archived]
+        create_date:
+          type: string
+          format: date-time
+          description: Дата создания
+        update_date:
+          type: string
+          format: date-time
+          description: Дата обновления
+        company_inn:
+          type: string
+          description: ИНН компании
+        company_gln:
+          type: string
+          description: GLN компании
+        company_guid:
+          type: string
+          description: GUID компании
+        categories:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+        brand_id:
+          type: integer
+          description: ID бренда
+        brand_name:
+          type: string
+          description: Наименование бренда
+        good_rating:
+          type: string
+          nullable: true
+          description: Рейтинг товара
+        good_images:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductImage'
+        good_attrs:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductAttribute'
+        good_reviews:
+          type: array
+          items:
+            type: object
+          description: Отзывы о товаре
+        good_reviews_count:
+          type: integer
+          description: Количество отзывов
+        good_prices:
+          type: array
+          items:
+            type: object
+          description: Цены товара
+        remainder_type:
+          type: string
+          nullable: true
+          description: Тип остатка
+        is_tech_gtin:
+          type: boolean
+          description: Технический GTIN
+        first_sign_date:
+          type: string
+          format: date-time
+          description: Дата первой публикации
+    
+    Identification:
+      type: object
+      properties:
+        value:
+          type: string
+          description: Значение идентификатора
+        type:
+          type: string
+          description: Тип идентификатора
+          enum: [gtin, other]
+        multiplier:
+          type: integer
+          description: Множитель
+        level:
+          type: string
+          description: Уровень упаковки
+          enum: [trade-unit, consumer-unit, etc]
+    
+    Category:
+      type: object
+      properties:
+        cat_id:
+          type: integer
+          description: ID категории
+        cat_name:
+          type: string
+          description: Наименование категории
+    
+    ProductImage:
+      type: object
+      properties:
+        photo_type:
+          type: string
+          description: Тип фотографии
+        photo_date:
+          type: string
+          format: date-time
+          description: Дата фотографии
+        photo_url:
+          type: string
+          description: URL фотографии
+        barcode:
+          type: string
+          description: Штрихкод
+    
+    ProductAttribute:
+      type: object
+      properties:
+        attr_id:
+          type: integer
+          description: ID атрибута
+        attr_name:
+          type: string
+          description: Наименование атрибута
+        attr_value:
+          type: string
+          description: Значение атрибута
+        attr_value_type:
+          type: string
+          description: Тип значения атрибута
+        attr_group_id:
+          type: integer
+          description: ID группы атрибутов
+        attr_group_name:
+          type: string
+          description: Наименование группы атрибутов
+        value_id:
+          type: integer
+          description: ID значения
+        published_date:
+          type: string
+          format: date-time
+          description: Дата публикации
+        attr_value_id:
+          type: integer
+          description: ID значения атрибута
+        gtin:
+          type: string
+          description: GTIN
+        multiplier:
+          type: string
+          description: Множитель
+        level:
+          type: string
+          description: Уровень упаковки
+    
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Сообщение об ошибке
+        code:
+          type: integer
+          description: Код ошибки
+
+  parameters:
+    ApiKeyParam:
+      name: apikey
+      in: query
+      required: true
+      schema:
+        type: string
+      description: API ключ для аутентификации
+
+    FormatParam:
+      name: format
+      in: query
+      required: true
+      schema:
+        type: string
+      description: Формат получаемого документа xml или json
+
+    GTINsParam:
+      name: gtins
+      in: query
+      required: true
+      schema:
+        type: string
+      description: Список GTIN кодов через точку с запятой
+
